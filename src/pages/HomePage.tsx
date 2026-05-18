@@ -1931,6 +1931,89 @@ const SectionKicker: React.FC<{
   </Stack>
 );
 
+const HOW_IT_WORKS_NETWORK_STATS_FALLBACK =
+  'Recognized repositories, verified GitHub identity, public validator scoring.';
+
+const HowItWorksNetworkStats: React.FC<{
+  totalRepos: number;
+  totalLines: number;
+  totalMergedPrs: number;
+  totalCommits: number;
+  totalIssuesSolved: number;
+  medianMergeRate: number;
+}> = (props) => {
+  const buildHowItWorksNetworkStats = ({
+    totalRepos,
+    totalLines,
+    totalMergedPrs,
+    totalCommits,
+    totalIssuesSolved,
+    medianMergeRate,
+  }: {
+    totalRepos: number;
+    totalLines: number;
+    totalMergedPrs: number;
+    totalCommits: number;
+    totalIssuesSolved: number;
+    medianMergeRate: number;
+  }) =>
+    (
+      [
+        totalRepos > 0 && {
+          value: formatCompactNumber(totalRepos),
+          label: 'repos',
+        },
+        totalLines > 0 && {
+          value: formatCompactNumber(totalLines),
+          label: 'lines',
+        },
+        totalMergedPrs > 0 && {
+          value: formatCompactNumber(totalMergedPrs),
+          label: 'PRs',
+        },
+        totalCommits > 0 && {
+          value: formatCompactNumber(totalCommits),
+          label: 'commits',
+        },
+        totalIssuesSolved > 0 && {
+          value: formatCompactNumber(totalIssuesSolved),
+          label: 'issues solved',
+        },
+        medianMergeRate > 0 && {
+          value: `${medianMergeRate}%`,
+          label: 'median merge rate',
+        },
+      ] as const
+    ).filter((item): item is { value: string; label: string } => Boolean(item));
+
+  const stats = buildHowItWorksNetworkStats(props);
+  if (stats.length === 0) {
+    return <>{HOW_IT_WORKS_NETWORK_STATS_FALLBACK}</>;
+  }
+
+  return (
+    <>
+      {stats.map((stat, index) => (
+        <Box component="span" key={stat.label}>
+          {index > 0 ? ' · ' : null}
+          <Box
+            component="span"
+            sx={(theme) => ({
+              color: alpha(theme.palette.text.primary, 0.78),
+              fontWeight: 600,
+              fontFamily: 'var(--font-accent)',
+              fontVariantNumeric: 'tabular-nums',
+            })}
+          >
+            {stat.value}
+          </Box>{' '}
+          {stat.label}
+        </Box>
+      ))}
+    </>
+  );
+};
+
 const HowItWorksSection: React.FC<{
   totalRepos: number;
   totalLines: number;
@@ -2159,27 +2242,17 @@ const HowItWorksSection: React.FC<{
         mt: 2,
         color: alpha(theme.palette.text.primary, 0.42),
         fontSize: '0.68rem',
+        lineHeight: 1.45,
       })}
     >
-      {(() => {
-        const parts = [
-          totalRepos > 0 ? `${formatCompactNumber(totalRepos)} repos` : null,
-          totalLines > 0 ? `${formatCompactNumber(totalLines)} lines` : null,
-          totalMergedPrs > 0
-            ? `${formatCompactNumber(totalMergedPrs)} PRs`
-            : null,
-          totalCommits > 0
-            ? `${formatCompactNumber(totalCommits)} commits`
-            : null,
-          totalIssuesSolved > 0
-            ? `${formatCompactNumber(totalIssuesSolved)} issues solved`
-            : null,
-          medianMergeRate > 0 ? `${medianMergeRate}% median merge rate` : null,
-        ].filter(Boolean);
-        return parts.length > 0
-          ? parts.join(' · ')
-          : 'Recognized repositories, verified GitHub identity, public validator scoring.';
-      })()}
+      <HowItWorksNetworkStats
+        totalRepos={totalRepos}
+        totalLines={totalLines}
+        totalMergedPrs={totalMergedPrs}
+        totalCommits={totalCommits}
+        totalIssuesSolved={totalIssuesSolved}
+        medianMergeRate={medianMergeRate}
+      />
     </Typography>
   </Box>
 );
